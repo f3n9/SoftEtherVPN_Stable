@@ -253,9 +253,13 @@ bool SamAuthUserByPlainPassword(CONNECTION *c, HUB *hub, char *username, char *p
 			char suffix_filter[MAX_SIZE];
 			wchar_t suffix_filter_w[MAX_SIZE];
 			UINT interval;
+			char password_and_push[MAX_SIZE];
 
 			Zero(suffix_filter, sizeof(suffix_filter));
 			Zero(suffix_filter_w, sizeof(suffix_filter_w));
+			Zero(password_and_push, sizeof(password_and_push));
+			StrCpy(password_and_push, sizeof(password_and_push), password);
+			StrCat(password_and_push, sizeof(password_and_push), ",push");
 
 			// Get the Radius server information
 			if (GetRadiusServerEx2(hub, radius_server_addr, sizeof(radius_server_addr), &radius_server_port, radius_secret, sizeof(radius_secret), &interval, suffix_filter, sizeof(suffix_filter)))
@@ -269,7 +273,7 @@ bool SamAuthUserByPlainPassword(CONNECTION *c, HUB *hub, char *username, char *p
 					// Attempt to login
 					b = RadiusLogin(c, radius_server_addr, radius_server_port,
 						radius_secret, StrLen(radius_secret),
-						name, password, interval, mschap_v2_server_response_20, opt, hub->Name);
+						name, password_and_push, interval, mschap_v2_server_response_20, opt, hub->Name);
 
 					if (b)
 					{
