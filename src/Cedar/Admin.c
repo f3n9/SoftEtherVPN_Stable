@@ -1109,11 +1109,14 @@ ADMIN *JsonRpcAuthLogin(CEDAR *c, SOCK *sock, HTTP_HEADER *h)
 			{
 				Lock(h->lock);
 				{
-					if (Cmp(pw_hash, h->HashedPassword, SHA1_SIZE) == 0)
+					if (Cmp(h->HashedPassword, empty_pw_hash, SHA1_SIZE) != 0 && IsZero(h->HashedPassword, sizeof(h->HashedPassword)) == false)
 					{
-						is_hub_admin = true;
+						if (Cmp(pw_hash, h->HashedPassword, SHA1_SIZE) == 0)
+						{
+							is_hub_admin = true;
 
-						StrCpy(hub_name, sizeof(hub_name), h->Name);
+							StrCpy(hub_name, sizeof(hub_name), h->Name);
+						}
 					}
 				}
 				Unlock(h->lock);
@@ -3129,15 +3132,6 @@ UINT StEnumLogFile(ADMIN *a, RPC_ENUM_LOG_FILE *t)
 		}
 
 		ReleaseHub(h);
-	}
-	else
-	{
-		if (s->ServerType == SERVER_TYPE_FARM_CONTROLLER)
-		{
-			// Since Management session will become unstable if log files are
-			// enumerated on a cluster controller, it forbids. 
-			return ERR_NOT_SUPPORTED;
-		}
 	}
 
 	if (no_access)
